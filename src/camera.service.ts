@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { FixedThreadPool } from 'poolifier';
+import { shmem } from './dll/shmem';
+
 
 @Injectable()
 export class CameraService {
   // 线程池
   private pool: FixedThreadPool;
+
+  private shmem: any;
   // 相机列表
   public cameraList: Object;
   // dll路径
@@ -15,12 +19,19 @@ export class CameraService {
     // this.dllPath = __dirname.replace(/dist$/, 'dll\\')
     this.dllPath = dllPath
     console.log(`dllPath:`, this.dllPath)
+
+    let pathArray = process.env.PATH.split(';');
+    pathArray.unshift(dllPath);
+    process.env.PATH = pathArray.join(';');
+    this.shmem = shmem(dllPath)
+
     // 新开线程池
     this.pool = new FixedThreadPool(1, __dirname + '/camera.worker.js', {
       messageHandler: ({ bufferPtr, id, height, width, channel }) => {
         console.log('out:', bufferPtr, id, height, width, channel)
+        let buffer = this.shmem.val2ptr(bufferPtr)
         let sn = this.cameraList[id].sn
-        this.grabbedCb({bufferPtr, sn, id, height, width, channel})
+        this.grabbedCb({ buffer, sn, id, height, width, channel })
       }
     });
   }
@@ -37,7 +48,11 @@ export class CameraService {
    * @returns 枚举相机数量
    */
   public async init(types: string): Promise<unknown> {
-    return await this.pool.execute(types, 'init')
+    const count: any = await this.pool.execute(types, 'init')
+    for (let i = 0; i < count; i++) {
+      await this.getParams(i)
+    }
+    return count
   }
 
   /**
@@ -49,7 +64,8 @@ export class CameraService {
   public async mock(count: number, cameraPAthList: Array<string>): Promise<number[]> {
     const ids = []
     for (let i = 0; i < count; i++) {
-      let id = await this.pool.execute(cameraPAthList[0], 'mock')
+      let id: any = await this.pool.execute(cameraPAthList[0], 'mock')
+      await this.getParams(id)
       ids.push(id)
     }
     return ids
@@ -60,9 +76,9 @@ export class CameraService {
    * @param id 相机ID
    * @returns 
    */
-  public getParams(id: number) {
+  public async getParams(id: number) {
     this.pool.execute(id, 'getParams').then(({ sn, model, type, width, height, channel }) => {
-      const camera = {width, height, channel, sn, model, type}
+      const camera = { width, height, channel, sn, model, type }
       this.cameraList[id] = camera
       console.log(this.cameraList[id])
       return this.cameraList[id]
