@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { FixedThreadPool } from 'poolifier';
 
 @Injectable()
-export class AppService {
+export class CameraService {
   // 线程池
   pool: FixedThreadPool;
   // 相机列表
@@ -10,8 +10,9 @@ export class AppService {
   // dll路径
   dllPath: string;
   grabbedCb: any;
-  constructor() {
-    this.dllPath = __dirname.replace(/dist$/, 'dll\\')
+  constructor(dllPath: string) {
+    // this.dllPath = __dirname.replace(/dist$/, 'dll\\')
+    this.dllPath = dllPath
     console.log(this.dllPath)
     // 新开线程池
     this.pool = new FixedThreadPool(1, __dirname + '/camera.worker.js', {
@@ -28,7 +29,7 @@ export class AppService {
    * @param types 相机类型
    * @returns 枚举相机数量
    */
-  async init(types: string): Promise<unknown> {
+  public async init(types: string): Promise<unknown> {
     return await this.pool.execute(types, 'init')
   }
 
@@ -38,7 +39,7 @@ export class AppService {
    * @param cameraPAthList 模拟相机路径
    * @returns 模拟相机id列表
    */
-  async mock(count: number, cameraPAthList: Array<string>): Promise<number[]> {
+  public async mock(count: number, cameraPAthList: Array<string>): Promise<number[]> {
     const ids = []
     for (let i = 0; i < count; i++) {
       let id = await this.pool.execute(cameraPAthList[0], 'mock')
@@ -52,7 +53,7 @@ export class AppService {
    * @param id 相机ID
    * @returns 
    */
-  getParams(id: number) {
+  public getParams(id: number) {
     this.pool.execute(id, 'getParams').then(({ sn, model, type, width, height, channel }) => {
       this.cameraList[id].width = width;
       this.cameraList[id].height = height;
@@ -70,36 +71,39 @@ export class AppService {
    * 内触发采集
    * @param id 相机id
    */
-  grabInternal(id: number) {
+  public grabInternal(id: number) {
     this.pool.execute(id, 'grabInternal')
   }
   /**
    * 外触发采集
    * @param id 相机id
    */
-  grabExternal(id: number) {
+  public grabExternal(id: number) {
     this.pool.execute(id, 'grabExternal')
   }
   /**
    * 单次采集
    * @param id 相机id
    */
-  grabOnce(id: number) {
+  public grabOnce(id: number) {
     this.pool.execute(id, 'grabOnce')
   }
-
-  grabStop(id: number): any {
+  /**
+   * 停止采集
+   * @param id 相机id
+   */
+  public grabStop(id: number): any {
     this.pool.execute(id, 'grabStop').then(() => {
       console.log('相机', this.cameraList[id].sn, '停止采集')
 
     })
   }
 
-  grabbed(callback: any) {
+  public grabbed(callback: any) {
     this.grabbedCb = callback;
   }
 
-  getHello() {
+  public getHello() {
     return "Hello"
   }
 }

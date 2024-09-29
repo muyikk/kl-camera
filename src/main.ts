@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { CameraModule } from './app.module';
+import { CameraModule } from './camera.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(CameraModule);

@@ -21,6 +21,7 @@ class CameraWorker extends ThreadWorker {
         process.env.PATH = pathArray.join(';');
         this.cameraScript = camera(dllPath)
         this.shmem = shmem(dllPath)
+        console.log(`初始化线程中dll模块\t完成`)
       },
       /**
        * 创建实体相机
