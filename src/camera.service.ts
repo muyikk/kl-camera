@@ -4,16 +4,17 @@ import { FixedThreadPool } from 'poolifier';
 @Injectable()
 export class CameraService {
   // 线程池
-  pool: FixedThreadPool;
+  private pool: FixedThreadPool;
   // 相机列表
-  cameraList: Object;
+  public cameraList: Object;
   // dll路径
-  dllPath: string;
-  grabbedCb: any;
+  public dllPath: string;
+  public grabbedCb: any;
   constructor(dllPath: string) {
+    this.cameraList = new Object;
     // this.dllPath = __dirname.replace(/dist$/, 'dll\\')
     this.dllPath = dllPath
-    console.log(this.dllPath)
+    console.log(`dllPath:`, this.dllPath)
     // 新开线程池
     this.pool = new FixedThreadPool(1, __dirname + '/camera.worker.js', {
       messageHandler: ({ bufferPtr, id, height, width, channel }) => {
@@ -22,8 +23,14 @@ export class CameraService {
         this.grabbedCb({bufferPtr, sn, id, height, width, channel})
       }
     });
-    this.pool.execute(this.dllPath, 'initPool')
   }
+  /**
+   * 初始化线程池中的工具函数
+   */
+  public async initPool() {
+    await this.pool.execute(this.dllPath, 'initPool')
+  }
+
   /**
    * 创建真实相机
    * @param types 相机类型
