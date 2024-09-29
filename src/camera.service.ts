@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { FixedThreadPool } from 'poolifier';
 import { shmem } from './dll/shmem';
+import { camera } from './dll/camera';
 
 
 @Injectable()
@@ -9,6 +10,7 @@ export class CameraService {
   private pool: FixedThreadPool;
 
   private shmem: any;
+  private camera: any;
   // 相机列表
   public cameraList: Object;
   // dll路径
@@ -24,6 +26,7 @@ export class CameraService {
     pathArray.unshift(dllPath);
     process.env.PATH = pathArray.join(';');
     this.shmem = shmem(dllPath)
+    this.camera = camera(dllPath)
 
     // 新开线程池
     this.pool = new FixedThreadPool(1, __dirname + '/camera.worker.js', {
@@ -123,6 +126,13 @@ export class CameraService {
    */
   public grabbed(callback: any): undefined {
     this.grabbedCb = callback;
+  }
+  /**
+   * 释放图片内存
+   * @param buffer 要释放的图片buffer
+   */
+  public free(buffer: any): undefined {
+    this.camera.free_img(buffer);
   }
   /**
    * 

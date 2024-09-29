@@ -113,6 +113,14 @@ public cameraList: {
   public grabbed(callback: any): undefined
 ```
 
+- 释放图片内存！！！（在使用完图片后必须调用，否则内存溢出）！！！
+```typescript
+  /**
+   * 释放图片内存
+   * @param buffer 要释放的图片buffer
+   */
+  public free(buffer: any): undefined 
+```
 ### 3. 示例
 
 ```typescript
