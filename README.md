@@ -1,52 +1,138 @@
-## Description
+# 考拉悠然公用相机模块
+nestjs通用相机模块，多线程调用c++相机dll
 
-nestjs 通用模块示例
-
-## Usage
-
-### Installation
-
-```bash
-$ npm install @koala1/hello
-```
+### 1. 关键数据结构
 
 ```typescript
-// app.module.ts
-import { HelloModule } from '@koala1/hello';
-
-@Module({
-  imports: [
-    HelloModule
-  ],
-  controllers: [AppController],
-  providers: [AppService],
-})
-
-// app.service.ts
-import { HelloService } from '@koala1/hello'
-@Injectable()
-export class AppService {
-  constructor(
-    public helloService: HelloService,
-  ) {
-    console.log(this.helloService.getHello()) // Hello
+// 自动获取
+public cameraList: {
+  id:{
+  width: number,  // 宽
+  height: number, // 高
+  channel: number,  // 通道
+  sn: string,   // 相机序列号
+  model: string,  // 相机型号
+  type: string; // 相机类型
   }
 }
 ```
 
-## API
+### 2. API
+
+- 初始化线程池中的工具函数
+  ！！！（在使用其他方法前调用它！）！！！
 
 ```typescript
-// HelloService
-getHello(): string;
+  /**
+   * 初始化线程池中的工具函数
+   */
+  public async initPool()
 ```
 
-## Router
+- 创建真实相机
 
 ```typescript
-// hello/getHello
+  /**
+   * 创建真实相机
+   * @param types 相机类型
+   * @returns 枚举相机数量
+   */
+  public async init(types: string): Promise<unknown>
 ```
 
-## Publish
+- 创建模拟相机
 
-发布方法参考 [PUBLISH.md](PUBLISH.md)
+```typescript
+  /**
+   * 创建模拟相机
+   * @param count 模拟相机数量
+   * @param cameraPAthList 模拟相机路径
+   * @returns 模拟相机id列表
+   */
+  public async mock(count: number, cameraPAthList: Array<string>): Promise<number[]>
+```
+
+- 获取相机参数
+
+```typescript
+  /**
+   * 获取相机参数
+   * @param id 相机ID
+   * @returns
+   */
+  public async getParams(id: number): Promise<any>
+```
+
+- 内触发采集
+
+```typescript
+  /**
+   * 内触发采集
+   * @param id 相机id
+   */
+  public grabInternal(id: number): undefined
+```
+
+- 外触发采集
+
+```typescript
+  /**
+   * 外触发采集
+   * @param id 相机id
+   */
+  public grabExternal(id: number): undefined
+```
+
+- 单次采集
+
+```typescript
+  /**
+   * 单次采集
+   * @param id 相机id
+   */
+  public grabOnce(id: number)
+```
+
+- 停止采集
+
+```typescript
+  /**
+   * 停止采集
+   * @param id 相机id
+   */
+  public grabStop(id: number): undefined
+```
+
+- 出图回调函数
+
+```typescript
+  /**
+   * 回调函数，用于出图
+   * @param callback
+   */
+  public grabbed(callback: any): undefined
+```
+
+### 3. 示例
+
+```typescript
+import { CameraService } from 'kl-camera';
+
+const cameraService = new CameraService(dllPath);
+// 在使用前先调用初始化线程和工具类
+await cameraService.initPool();
+// 创建模拟相机，具体路径格式参考https://kaolayouran.feishu.cn/docx/JtQxdy15foYTSkxOGWscHHkqnTf
+let id = await cameraService.mock(1, [
+  'D:\\kl-storage\\egis\\localCamera\\test',
+]);
+// 获取相机参数
+let params = await cameraService.getParams(id);
+console.log(params);
+// 执行回调函数取图
+cameraService.grabbed((res) => {
+  let { buffer, sn, id, height, width, channel } = res;
+  console.log(res);
+});
+// 模拟内触发采集
+cameraService.grabInternal(id);
+```

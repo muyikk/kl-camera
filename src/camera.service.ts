@@ -76,7 +76,7 @@ export class CameraService {
    * @param id 相机ID
    * @returns 
    */
-  public async getParams(id: number) {
+  public async getParams(id: number): Promise<any> {
     this.pool.execute(id, 'getParams').then(({ sn, model, type, width, height, channel }) => {
       const camera = { width, height, channel, sn, model, type }
       this.cameraList[id] = camera
@@ -90,14 +90,14 @@ export class CameraService {
    * 内触发采集
    * @param id 相机id
    */
-  public grabInternal(id: number) {
+  public grabInternal(id: number): undefined {
     this.pool.execute(id, 'grabInternal')
   }
   /**
    * 外触发采集
    * @param id 相机id
    */
-  public grabExternal(id: number) {
+  public grabExternal(id: number): undefined {
     this.pool.execute(id, 'grabExternal')
   }
   /**
@@ -111,17 +111,23 @@ export class CameraService {
    * 停止采集
    * @param id 相机id
    */
-  public grabStop(id: number): any {
+  public grabStop(id: number): undefined {
     this.pool.execute(id, 'grabStop').then(() => {
       console.log('相机', this.cameraList[id].sn, '停止采集')
 
     })
   }
-
-  public grabbed(callback: any) {
+  /**
+   * 回调函数，用于出图
+   * @param callback 
+   */
+  public grabbed(callback: any): undefined {
     this.grabbedCb = callback;
   }
-
+  /**
+   * 
+   * @returns 
+   */
   public getHello() {
     return "Hello"
   }
