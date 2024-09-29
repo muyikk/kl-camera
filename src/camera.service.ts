@@ -62,13 +62,9 @@ export class CameraService {
    */
   public getParams(id: number) {
     this.pool.execute(id, 'getParams').then(({ sn, model, type, width, height, channel }) => {
-      this.cameraList[id].width = width;
-      this.cameraList[id].height = height;
-      this.cameraList[id].channel = channel;
-      this.cameraList[id].sn = sn
-      this.cameraList[id].model = model
-      this.cameraList[id].type = type
-      console.log(this.cameraList[sn])
+      const camera = {width, height, channel, sn, model, type}
+      this.cameraList[id] = camera
+      console.log(this.cameraList[id])
       return this.cameraList[id]
     }).catch(err => {
       console.error(err)
