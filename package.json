@@ -1,7 +1,7 @@
 {
-  "name": "camera",
-  "version": "1.0.0",
-  "description": "公用相机模块",
+  "name": "kl-camera",
+  "version": "1.0.1",
+  "description": "考拉悠然公用相机模块",
   "author": "",
   "license": "ISC",
   "main": "dist/app.module.js",
@@ -73,5 +73,9 @@
   "files": [
     "dist/",
     "PUBLISH.md"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:muyikk/kl-camera.git"
+  }  
 }
