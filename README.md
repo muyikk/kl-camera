@@ -1,6 +1,6 @@
 # 考拉悠然公用相机模块
 nestjs通用相机模块，多线程调用c++相机dll
-
+配合该文档食用[工业相机软件设计、制作与使用](https://kaolayouran.feishu.cn/docx/JtQxdy15foYTSkxOGWscHHkqnTf)
 ### 1. 关键数据结构
 
 ```typescript
@@ -121,7 +121,8 @@ import { CameraService } from 'kl-camera';
 const cameraService = new CameraService(dllPath);
 // 在使用前先调用初始化线程和工具类
 await cameraService.initPool();
-// 创建模拟相机，具体路径格式参考https://kaolayouran.feishu.cn/docx/JtQxdy15foYTSkxOGWscHHkqnTf
+// 创建模拟相机，具体路径格式参考
+// https://kaolayouran.feishu.cn/docx/JtQxdy15foYTSkxOGWscHHkqnTf
 let id = await cameraService.mock(1, [
   'D:\\kl-storage\\egis\\localCamera\\test',
 ]);
