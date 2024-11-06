@@ -138,7 +138,7 @@ export class Camera {
    * 相机畸变校正
    * @param id 相机id
    * @param params 畸变校正参数,为NULL时取消校正  [0-3]相机内参 [4]外参数量(4/5/8/12/14) [5-end]畸变外参
-   * @returns 0:失败, 1:成功
+   * @returns true:成功, false:失败
    */
   public async cameraUndistort({ id, params }) {
     let fail = await this.pool.execute({ id, params }, 'cameraUndistort')
@@ -153,7 +153,7 @@ export class Camera {
    * 设置曝光时间
    * @param id 相机id
    * @param time 曝光时间
-   * @returns 0:成功, 1:失败
+   * @returns true:成功, false:失败
    */
   public async setExposureTime({ id, time }) {
     let fail = await this.pool.execute({ id, time }, 'setExposureTime')
@@ -167,7 +167,7 @@ export class Camera {
   /**
    * 获取曝光时间
    * @param id 相机id
-   * @returns time 曝光时间
+   * @returns time 曝光时间，return false => 失败
    */
   public async getExposureTime(id: number) {
     let { fail, time }: any = await this.pool.execute(id, 'getExposureTime')
