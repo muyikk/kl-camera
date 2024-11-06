@@ -140,7 +140,22 @@ export const camera = (dllPath) => {
      * @param [in] 图像数据内存指针（Buffer(uchar)）
      */
     free_img: ['void', ['uchar*']],
-
+    /// 相机畸变校正
+    /// id[in] 相机id
+    /// param[in,double[19]] 畸变校正参数，为NULL时取消校正
+    ///      [0-3]相机内参 [4]外参数量(4/5/8/12/14) [5-end]畸变外参
+    /// return 0:成功, 1:失败
+    camera_undistort: ['int', ['int', 'double*']],
+    /// 获取曝光时间
+    /// id[in] 相机id
+    /// time[out] 曝光时间(us)
+    /// return 0:成功, 1:失败
+    get_exposure_time: ['int', ['int', 'float*']],
+    /// 设置曝光时间
+    /// id[in] 相机id
+    /// time[in] 曝光时间(us)
+    /// return 0:成功, 1:失败
+    set_exposure_time: ['int', ['int', 'float']],
     /*
       @brief 写图片
       @param [in] 写出图片的路径

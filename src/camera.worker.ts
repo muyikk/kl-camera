@@ -105,6 +105,37 @@ class CameraWorker extends ThreadWorker {
         this.cameraScript.grab_once(id, _grabCb, Buffer.alloc(0));
       },
       /**
+       * 相机畸变校正
+       * @param id 相机id
+       * @param params 畸变校正参数,为NULL时取消校正  [0-3]相机内参 [4]外参数量(4/5/8/12/14) [5-end]畸变外参
+       * @returns 0:成功, 1:失败
+       */
+      cameraUndistort: ({ id, params }: any) => {
+        let paramsBuffer = params == null ? null : Buffer.from(Float64Array.from(params).buffer)
+        return this.cameraScript.camera_undistort(id, paramsBuffer)
+      },
+      /**
+       * 设置曝光时间
+       * @param id 相机id
+       * @param time 曝光时间
+       * @returns 0:成功, 1:失败
+       */
+      setExposureTime: ({ id, time }: any) => {
+        return this.cameraScript.set_exposure_time(id, time)
+      },
+      /**
+       * 获取曝光时间
+       * @param id 相机id
+       * @param time 曝光时间
+       * @returns 0:成功, 1:失败
+       */
+      getExposureTime: (id: number) => {
+        let timeBuffer = Buffer.alloc(64);
+        let state = this.cameraScript.get_exposure_time(id, timeBuffer)
+        let time = timeBuffer.readFloatLE();
+        return { fail: state, time }
+      },
+      /**
        * 停止采集
        * @param id 相机id
        * @returns 

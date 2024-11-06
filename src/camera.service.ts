@@ -135,6 +135,50 @@ export class Camera {
     this.camera.free_img(buffer);
   }
   /**
+   * 相机畸变校正
+   * @param id 相机id
+   * @param params 畸变校正参数,为NULL时取消校正  [0-3]相机内参 [4]外参数量(4/5/8/12/14) [5-end]畸变外参
+   * @returns 0:失败, 1:成功
+   */
+  public async cameraUndistort({ id, params }) {
+    let fail = await this.pool.execute({ id, params }, 'cameraUndistort')
+    if (fail) {
+      console.error('undistort fail!')
+      return false
+    } else {
+      return true
+    }
+  }
+  /**
+   * 设置曝光时间
+   * @param id 相机id
+   * @param time 曝光时间
+   * @returns 0:成功, 1:失败
+   */
+  public async setExposureTime({ id, time }) {
+    let fail = await this.pool.execute({ id, time }, 'setExposureTime')
+    if (fail) {
+      console.error('setExposureTime fail!')
+      return false
+    } else {
+      return true
+    }
+  }
+  /**
+   * 获取曝光时间
+   * @param id 相机id
+   * @returns time 曝光时间
+   */
+  public async getExposureTime(id: number) {
+    let { fail, time }: any = await this.pool.execute(id, 'getExposureTime')
+    if (fail) {
+      console.error('getExposureTime fail!')
+      return false
+    } else {
+      return time
+    }
+  }
+  /**
    * 
    * @returns 
    */
