@@ -158,24 +158,24 @@ public cameraList: {
 ### 3. 示例
 
 ```typescript
-import { CameraService } from 'kl-camera';
+import { Camera } from 'kl-camera';
 
-const cameraService = new CameraService(dllPath);
+const camera = new Camera(dllPath);
 // 在使用前先调用初始化线程和工具类
-await cameraService.initPool();
+await camera.initPool();
 // 创建模拟相机，具体路径格式参考
 // https://kaolayouran.feishu.cn/docx/JtQxdy15foYTSkxOGWscHHkqnTf
-let id = await cameraService.mock(1, [
+let id = await camera.mock(1, [
   'D:\\kl-storage\\egis\\localCamera\\test',
 ]);
 // 获取相机参数
-let params = await cameraService.getParams(id);
+let params = await camera.getParams(id);
 console.log(params);
 // 执行回调函数取图
-cameraService.grabbed((res) => {
+camera.grabbed((res) => {
   let { buffer, sn, id, height, width, channel } = res;
   console.log(res);
 });
 // 模拟内触发采集
-cameraService.grabInternal(id);
+camera.grabInternal(id);
 ```
