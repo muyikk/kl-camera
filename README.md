@@ -1,6 +1,7 @@
 # 考拉悠然公用相机模块
-nestjs通用相机模块，多线程调用c++相机dll
-配合该文档食用[工业相机软件设计、制作与使用](https://kaolayouran.feishu.cn/docx/JtQxdy15foYTSkxOGWscHHkqnTf)
+nestjs通用相机模块，多线程调用c++相机dll<br>
+配合该文档食用<br>
+[工业相机软件设计、制作与使用](https://kaolayouran.feishu.cn/docx/JtQxdy15foYTSkxOGWscHHkqnTf)
 ### 1. 关键数据结构
 
 ```typescript
@@ -27,6 +28,15 @@ public cameraList: {
    * 初始化线程池中的工具函数
    */
   public async initPool()
+```
+
+- 释放图片内存！！！（在使用完图片后必须调用，否则内存溢出）！！！
+```typescript
+  /**
+   * 释放图片内存
+   * @param buffer 要释放的图片buffer
+   */
+  public free(buffer: any): undefined 
 ```
 
 - 创建真实相机
@@ -112,15 +122,39 @@ public cameraList: {
    */
   public grabbed(callback: any): undefined
 ```
+- 相机畸变校正
 
-- 释放图片内存！！！（在使用完图片后必须调用，否则内存溢出）！！！
 ```typescript
   /**
-   * 释放图片内存
-   * @param buffer 要释放的图片buffer
+   * 相机畸变校正
+   * @param id 相机id
+   * @param params 畸变校正参数,为NULL时取消校正  [0-3]相机内参 [4]外参数量(4/5/8/12/14) [5-end]畸变外参
+   * @returns true:成功, false:失败
    */
-  public free(buffer: any): undefined 
+  public async cameraUndistort({ id, params })
 ```
+- 设置曝光时间
+
+```typescript
+  /**
+   * 设置曝光时间
+   * @param id 相机id
+   * @param time 曝光时间
+   * @returns true:成功, false:失败
+   */
+  public async setExposureTime({ id, time })
+```
+- 获取曝光时间
+
+```typescript
+  /**
+   * 获取曝光时间
+   * @param id 相机id
+   * @returns time 曝光时间，return false => 失败
+   */
+  public async getExposureTime(id: number)
+```
+
 ### 3. 示例
 
 ```typescript
