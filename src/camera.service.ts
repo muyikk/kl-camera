@@ -5,7 +5,7 @@ import { camera } from './dll/camera';
 
 
 @Injectable()
-export class CameraService {
+export class Camera {
   // 线程池
   private pool: FixedThreadPool;
 

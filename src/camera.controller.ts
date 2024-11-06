@@ -1,10 +1,10 @@
 import { Controller, Get } from '@nestjs/common';
-import { CameraService } from './camera.service';
+import { Camera } from './camera.service';
 
 // 自定义模块名称(hello)
 @Controller("hello")
 export class CameraController {
-  constructor(private readonly appService: CameraService) { }
+  constructor(private readonly appService: Camera) { }
 
   @Get("getHello")
   getHello(): string {
