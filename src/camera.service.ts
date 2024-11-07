@@ -1,21 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { FixedThreadPool } from 'poolifier';
-import { shmem } from './dll/shmem';
 import { camera } from './dll/camera';
-
+import * as KLBuffer from 'kl-buffer'
+import { CameraInterface } from './interface'
 
 @Injectable()
-export class Camera {
+export class Camera implements CameraInterface {
   // 线程池
-  private pool: FixedThreadPool;
-
-  private shmem: any;
-  private camera: any;
+  pool: FixedThreadPool;
+  // 相机dll
+  camera: any;
   // 相机列表
-  public cameraList: Object;
+  cameraList: Object;
   // dll路径
-  public dllPath: string;
-  public grabbedCb: any;
+  dllPath: string;
+  // 出图回调
+  grabbedCb: any;
   constructor(dllPath: string) {
     this.cameraList = new Object;
     // this.dllPath = __dirname.replace(/dist$/, 'dll\\')
@@ -25,16 +25,16 @@ export class Camera {
     let pathArray = process.env.PATH.split(';');
     pathArray.unshift(dllPath);
     process.env.PATH = pathArray.join(';');
-    this.shmem = shmem(dllPath)
     this.camera = camera(dllPath)
 
     // 新开线程池
     this.pool = new FixedThreadPool(1, __dirname + '/camera.worker.js', {
       messageHandler: ({ bufferPtr, id, height, width, channel }) => {
         // console.log('out:', bufferPtr, id, height, width, channel)
-        let buffer = this.shmem.val2ptr(bufferPtr)
+        // let buffer = this.shmem.val2ptr(bufferPtr)
+        const buffer = KLBuffer.alloc(width * height * channel, bufferPtr)
         let sn = this.cameraList[id].sn
-        this.grabbedCb({ buffer, sn, id, height, width, channel })
+        this.grabbedCb({ buffer: buffer.buffer, sn, id, height, width, channel })
       }
     });
   }
@@ -79,17 +79,12 @@ export class Camera {
   /**
    * 获取相机参数
    * @param id 相机ID
-   * @returns 该相机参数列表
+   * @returns 
    */
   public async getParams(id: number): Promise<any> {
-    this.pool.execute(id, 'getParams').then(({ sn, model, type, width, height, channel }) => {
-      const camera = { width, height, channel, sn, model, type }
-      this.cameraList[id] = camera
-      // console.log(this.cameraList[id])
-      return this.cameraList[id]
-    }).catch(err => {
-      console.error(err)
-    })
+    let camera = await this.pool.execute(id, 'getParams')
+    this.cameraList[id] = camera;
+    return this.cameraList[id];
   }
   /**
    * 内触发采集

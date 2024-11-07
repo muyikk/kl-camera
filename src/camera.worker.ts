@@ -1,14 +1,13 @@
 import { ThreadWorker } from "poolifier";
 import { parentPort } from "worker_threads";
 import { camera } from 'src/dll/camera';
-import { shmem } from 'src/dll/shmem';
 import * as ref from "ref-napi"
+
 
 
 class CameraWorker extends ThreadWorker {
   private _grabCbMap: Map<number, Buffer>;
   private cameraScript: any;
-  private shmem: any;
   constructor() {
     super({
       /**
@@ -20,7 +19,6 @@ class CameraWorker extends ThreadWorker {
         pathArray.unshift(dllPath);
         process.env.PATH = pathArray.join(';');
         this.cameraScript = camera(dllPath)
-        this.shmem = shmem(dllPath)
         console.log(`初始化线程中dll模块\t完成`)
       },
       /**
@@ -60,7 +58,7 @@ class CameraWorker extends ThreadWorker {
         const model = ref.readCString(modelBuffer, 0);
         const type = ref.readCString(typeBuffer, 0);
 
-        return { sn, model, type, width, height, channel };
+        return { id, sn, model, type, width, height, channel };
       },
       /**
        * 内触发采集
@@ -70,9 +68,8 @@ class CameraWorker extends ThreadWorker {
         let _grabCb = null;
         _grabCb = this.cameraScript.grabCb((fno, buffer, height, width, channel, user) => {
           this._grabCbMap.set(id, _grabCb)
-          let bufferPtr = this.shmem.ptr2val(buffer);
           // console.log('pool:', bufferPtr, id, height, width, channel)
-          parentPort.postMessage({ bufferPtr, id, height, width, channel });
+          parentPort.postMessage({ bufferPtr: buffer.address(), id, height, width, channel });
         });
         this.cameraScript.grab_internal(id, _grabCb, Buffer.alloc(0));
       },
@@ -84,9 +81,8 @@ class CameraWorker extends ThreadWorker {
         let _grabCb = null;
         _grabCb = this.cameraScript.grabCb((fno, buffer, height, width, channel, user) => {
           this._grabCbMap.set(id, _grabCb)
-          let bufferPtr = this.shmem.ptr2val(buffer);
           // console.log('pool:', bufferPtr, id, height, width, channel)
-          parentPort.postMessage({ bufferPtr, id, height, width, channel });
+          parentPort.postMessage({ bufferPtr: buffer.address(), id, height, width, channel });
         });
         this.cameraScript.grab_external(id, _grabCb, Buffer.alloc(0));
       },
@@ -98,9 +94,8 @@ class CameraWorker extends ThreadWorker {
         let _grabCb = null;
         _grabCb = this.cameraScript.grabCb((fno, buffer, height, width, channel, user) => {
           this._grabCbMap.set(id, _grabCb)
-          let bufferPtr = this.shmem.ptr2val(buffer);
           // console.log('pool:', bufferPtr, id, height, width, channel)
-          parentPort.postMessage({ bufferPtr, id, height, width, channel });
+          parentPort.postMessage({ bufferPtr: buffer.address(), id, height, width, channel });
         });
         this.cameraScript.grab_once(id, _grabCb, Buffer.alloc(0));
       },
