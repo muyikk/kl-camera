@@ -181,6 +181,12 @@ export class Camera {
     }
   }
   /**
+   * 关闭所有相机
+   */
+  public async closeAll(): Promise<void> {
+    await this.pool.execute('closeAll')
+  }
+  /**
    * 
    * @returns 
    */

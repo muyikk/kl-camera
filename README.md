@@ -50,6 +50,15 @@ public cameraList: {
   public async init(types: string): Promise<number[]>
 ```
 
+- 关闭所有相机
+**PS: 相比于`关闭和打开相机`，更希望你使用`开始和停止采集`，相机模块不提供关闭某一个相机的方法，仅提供`关闭所有相机的方法`用于退出软件的操作**
+```typescript
+  /**
+   * 关闭所有相机
+   */
+  public async closeAll(): Promise<void>
+```
+
 - 创建模拟相机
 
 ```typescript
