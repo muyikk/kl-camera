@@ -173,19 +173,23 @@ import { Camera } from 'kl-camera';
 const camera = new Camera(dllPath);
 // 在使用前先调用初始化线程和工具类
 await camera.initPool();
+
 // 创建模拟相机，具体路径格式参考
 // https://kaolayouran.feishu.cn/docx/JtQxdy15foYTSkxOGWscHHkqnTf
-let id = await camera.mock(1, [
+let ids = await camera.mock(1, [
   'D:\\kl-storage\\egis\\localCamera\\test',
 ]);
+
 // 获取相机参数
-let params = await camera.getParams(id);
+let params = await camera.getParams(ids[0]);
 console.log(params);
+
 // 执行回调函数取图
 camera.grabbed((res) => {
   let { buffer, sn, id, height, width, channel } = res;
   console.log(res);
 });
+
 // 模拟内触发采集
-camera.grabInternal(id);
+camera.grabInternal(ids[0]);
 ```
