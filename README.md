@@ -45,9 +45,9 @@ public cameraList: {
   /**
    * 创建真实相机
    * @param types 相机类型
-   * @returns 枚举相机数量
+   * @returns 真实相机id列表
    */
-  public async init(types: string): Promise<unknown>
+  public async init(types: string): Promise<number[]>
 ```
 
 - 创建模拟相机
@@ -68,7 +68,7 @@ public cameraList: {
   /**
    * 获取相机参数
    * @param id 相机ID
-   * @returns
+   * @returns 该相机参数列表
    */
   public async getParams(id: number): Promise<any>
 ```
@@ -80,7 +80,7 @@ public cameraList: {
    * 内触发采集
    * @param id 相机id
    */
-  public grabInternal(id: number): undefined
+  public grabInternal(id: number): void
 ```
 
 - 外触发采集
@@ -90,7 +90,7 @@ public cameraList: {
    * 外触发采集
    * @param id 相机id
    */
-  public grabExternal(id: number): undefined
+  public grabExternal(id: number): void
 ```
 
 - 单次采集
@@ -100,7 +100,7 @@ public cameraList: {
    * 单次采集
    * @param id 相机id
    */
-  public grabOnce(id: number)
+  public grabOnce(id: number): void
 ```
 
 - 停止采集
@@ -110,7 +110,7 @@ public cameraList: {
    * 停止采集
    * @param id 相机id
    */
-  public grabStop(id: number): undefined
+  public grabStop(id: number): void
 ```
 
 - 出图回调函数
@@ -120,7 +120,7 @@ public cameraList: {
    * 回调函数，用于出图
    * @param callback
    */
-  public grabbed(callback: any): undefined
+  public grabbed(callback: any): void
 ```
 - 相机畸变校正
 
@@ -131,7 +131,7 @@ public cameraList: {
    * @param params 畸变校正参数,为NULL时取消校正  [0-3]相机内参 [4]外参数量(4/5/8/12/14) [5-end]畸变外参
    * @returns true:成功, false:失败
    */
-  public async cameraUndistort({ id, params })
+  public async cameraUndistort({ id, params }): Promise<boolean>
 ```
 - 设置曝光时间
 
@@ -142,7 +142,7 @@ public cameraList: {
    * @param time 曝光时间
    * @returns true:成功, false:失败
    */
-  public async setExposureTime({ id, time })
+  public async setExposureTime({ id, time }): Promise<boolean>
 ```
 - 获取曝光时间
 
@@ -152,7 +152,7 @@ public cameraList: {
    * @param id 相机id
    * @returns time 曝光时间，return false => 失败
    */
-  public async getExposureTime(id: number)
+  public async getExposureTime(id: number): Promise<any>
 ```
 
 ### 3. 示例

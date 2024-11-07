@@ -48,14 +48,16 @@ export class Camera {
   /**
    * 创建真实相机
    * @param types 相机类型
-   * @returns 枚举相机数量
+   * @returns 真实相机id列表
    */
-  public async init(types: string): Promise<unknown> {
+  public async init(types: string): Promise<number[]> {
+    const ids = []
     const count: any = await this.pool.execute(types, 'init')
     for (let i = 0; i < count; i++) {
       await this.getParams(i)
+      ids.push(i)
     }
-    return count
+    return ids
   }
 
   /**
@@ -67,7 +69,7 @@ export class Camera {
   public async mock(count: number, cameraPAthList: Array<string>): Promise<number[]> {
     const ids = []
     for (let i = 0; i < count; i++) {
-      let id: any = await this.pool.execute(cameraPAthList[0], 'mock')
+      let id: any = await this.pool.execute(cameraPAthList[i], 'mock')
       await this.getParams(id)
       ids.push(id)
     }
@@ -77,7 +79,7 @@ export class Camera {
   /**
    * 获取相机参数
    * @param id 相机ID
-   * @returns 
+   * @returns 该相机参数列表
    */
   public async getParams(id: number): Promise<any> {
     this.pool.execute(id, 'getParams').then(({ sn, model, type, width, height, channel }) => {
@@ -93,28 +95,28 @@ export class Camera {
    * 内触发采集
    * @param id 相机id
    */
-  public grabInternal(id: number): undefined {
+  public grabInternal(id: number): void {
     this.pool.execute(id, 'grabInternal')
   }
   /**
    * 外触发采集
    * @param id 相机id
    */
-  public grabExternal(id: number): undefined {
+  public grabExternal(id: number): void {
     this.pool.execute(id, 'grabExternal')
   }
   /**
    * 单次采集
    * @param id 相机id
    */
-  public grabOnce(id: number) {
+  public grabOnce(id: number): void {
     this.pool.execute(id, 'grabOnce')
   }
   /**
    * 停止采集
    * @param id 相机id
    */
-  public grabStop(id: number): undefined {
+  public grabStop(id: number): void {
     this.pool.execute(id, 'grabStop').then(() => {
       console.log('相机', this.cameraList[id].sn, '停止采集')
 
@@ -124,7 +126,7 @@ export class Camera {
    * 回调函数，用于出图
    * @param callback 
    */
-  public grabbed(callback: any): undefined {
+  public grabbed(callback: any): void {
     this.grabbedCb = callback;
   }
   /**
@@ -140,7 +142,7 @@ export class Camera {
    * @param params 畸变校正参数,为NULL时取消校正  [0-3]相机内参 [4]外参数量(4/5/8/12/14) [5-end]畸变外参
    * @returns true:成功, false:失败
    */
-  public async cameraUndistort({ id, params }) {
+  public async cameraUndistort({ id, params }): Promise<boolean> {
     let fail = await this.pool.execute({ id, params }, 'cameraUndistort')
     if (fail) {
       console.error('undistort fail!')
@@ -155,7 +157,7 @@ export class Camera {
    * @param time 曝光时间
    * @returns true:成功, false:失败
    */
-  public async setExposureTime({ id, time }) {
+  public async setExposureTime({ id, time }): Promise<boolean> {
     let fail = await this.pool.execute({ id, time }, 'setExposureTime')
     if (fail) {
       console.error('setExposureTime fail!')
@@ -169,7 +171,7 @@ export class Camera {
    * @param id 相机id
    * @returns time 曝光时间，return false => 失败
    */
-  public async getExposureTime(id: number) {
+  public async getExposureTime(id: number): Promise<any> {
     let { fail, time }: any = await this.pool.execute(id, 'getExposureTime')
     if (fail) {
       console.error('getExposureTime fail!')
