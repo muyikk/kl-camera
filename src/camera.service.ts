@@ -31,7 +31,7 @@ export class Camera {
     // 新开线程池
     this.pool = new FixedThreadPool(1, __dirname + '/camera.worker.js', {
       messageHandler: ({ bufferPtr, id, height, width, channel }) => {
-        console.log('out:', bufferPtr, id, height, width, channel)
+        // console.log('out:', bufferPtr, id, height, width, channel)
         let buffer = this.shmem.val2ptr(bufferPtr)
         let sn = this.cameraList[id].sn
         this.grabbedCb({ buffer, sn, id, height, width, channel })
@@ -85,7 +85,7 @@ export class Camera {
     this.pool.execute(id, 'getParams').then(({ sn, model, type, width, height, channel }) => {
       const camera = { width, height, channel, sn, model, type }
       this.cameraList[id] = camera
-      console.log(this.cameraList[id])
+      // console.log(this.cameraList[id])
       return this.cameraList[id]
     }).catch(err => {
       console.error(err)
@@ -118,7 +118,7 @@ export class Camera {
    */
   public grabStop(id: number): void {
     this.pool.execute(id, 'grabStop').then(() => {
-      console.log('相机', this.cameraList[id].sn, '停止采集')
+      // console.log('相机', this.cameraList[id].sn, '停止采集')
 
     })
   }
