@@ -63,7 +63,7 @@ export class Camera {
   /**
    * 创建模拟相机
    * @param count 模拟相机数量
-   * @param cameraPAthList 模拟相机路径
+   * @param cameraPAthList 模拟相机路径列表
    * @returns 模拟相机id列表
    */
   public async mock(count: number, cameraPAthList: Array<string>): Promise<number[]> {
