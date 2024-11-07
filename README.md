@@ -36,7 +36,7 @@ public cameraList: {
    * 释放图片内存
    * @param buffer 要释放的图片buffer
    */
-  public free(buffer: any): undefined 
+  public free(buffer: any): void 
 ```
 
 - 创建真实相机

@@ -133,7 +133,7 @@ export class Camera {
    * 释放图片内存
    * @param buffer 要释放的图片buffer
    */
-  public free(buffer: any): undefined {
+  public free(buffer: any): void {
     this.camera.free_img(buffer);
   }
   /**
