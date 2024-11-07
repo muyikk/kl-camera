@@ -31,7 +31,8 @@ public cameraList: {
 ```
 
 - 释放图片内存<br>
-**！！！（在使用完图片后必须调用，否则内存溢出）！！！**
+**！！！（在使用完图片后必须调用，否则内存溢出）！！！**<br>
+传入buffer，如果使用`KLBuffer`，你应该传入`KLBuffer.buffer`<br>
 ```typescript
   /**
    * 释放图片内存
@@ -124,7 +125,11 @@ public cameraList: {
 ```
 
 - 出图回调函数
-
+回调的值为{ fno, bufferPtrVal, sn, id, height, width, channel }<br>
+bufferPtrVal是图片首地址，可以使用kl-buffer获取图片, `pic.buffer`是图片buffer<br>
+```typescript
+const pic = KLBuffer.alloc(width * height * channel, bufferPtrVal)
+```
 ```typescript
   /**
    * 回调函数，用于出图

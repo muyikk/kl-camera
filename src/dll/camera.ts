@@ -196,7 +196,7 @@ export const camera = (dllPath) => {
   camera.grabCb = (callback) => {
     const cb = Callback(
       'void',
-      ['int *', 'uchar *', 'int', 'int', 'int', 'void *'],
+      ['int64', 'uchar *', 'int', 'int', 'int', 'void *'],
       (...arg) => {
         callback(...arg);
       },

@@ -68,8 +68,7 @@ class CameraWorker extends ThreadWorker {
         let _grabCb = null;
         _grabCb = this.cameraScript.grabCb((fno, buffer, height, width, channel, user) => {
           this._grabCbMap.set(id, _grabCb)
-          // console.log('pool:', bufferPtr, id, height, width, channel)
-          parentPort.postMessage({ bufferPtr: buffer.address(), id, height, width, channel });
+          parentPort.postMessage({ fno, bufferPtrVal: buffer.address(), id, height, width, channel });
         });
         this.cameraScript.grab_internal(id, _grabCb, Buffer.alloc(0));
       },
@@ -81,8 +80,7 @@ class CameraWorker extends ThreadWorker {
         let _grabCb = null;
         _grabCb = this.cameraScript.grabCb((fno, buffer, height, width, channel, user) => {
           this._grabCbMap.set(id, _grabCb)
-          // console.log('pool:', bufferPtr, id, height, width, channel)
-          parentPort.postMessage({ bufferPtr: buffer.address(), id, height, width, channel });
+          parentPort.postMessage({ fno, bufferPtrVal: buffer.address(), id, height, width, channel });
         });
         this.cameraScript.grab_external(id, _grabCb, Buffer.alloc(0));
       },
@@ -94,8 +92,7 @@ class CameraWorker extends ThreadWorker {
         let _grabCb = null;
         _grabCb = this.cameraScript.grabCb((fno, buffer, height, width, channel, user) => {
           this._grabCbMap.set(id, _grabCb)
-          // console.log('pool:', bufferPtr, id, height, width, channel)
-          parentPort.postMessage({ bufferPtr: buffer.address(), id, height, width, channel });
+          parentPort.postMessage({ fno, bufferPtrVal: buffer.address(), id, height, width, channel });
         });
         this.cameraScript.grab_once(id, _grabCb, Buffer.alloc(0));
       },

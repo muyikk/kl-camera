@@ -16,9 +16,12 @@ export class Camera implements CameraInterface {
   dllPath: string;
   // 出图回调
   grabbedCb: any;
+
+  // isMock: boolean;
+  // imagePtrMap: Map<number, any>;
+  // expectedFrameNo: number;
   constructor(dllPath: string) {
     this.cameraList = new Object;
-    // this.dllPath = __dirname.replace(/dist$/, 'dll\\')
     this.dllPath = dllPath
     console.log(`dllPath:`, this.dllPath)
 
@@ -26,15 +29,24 @@ export class Camera implements CameraInterface {
     pathArray.unshift(dllPath);
     process.env.PATH = pathArray.join(';');
     this.camera = camera(dllPath)
-
+    // // 用于纠正出图顺序
+    // this.imagePtrMap = new Map<number, any>;
+    // this.expectedFrameNo = 0;
     // 新开线程池
     this.pool = new FixedThreadPool(1, __dirname + '/camera.worker.js', {
-      messageHandler: ({ bufferPtr, id, height, width, channel }) => {
-        // console.log('out:', bufferPtr, id, height, width, channel)
-        // let buffer = this.shmem.val2ptr(bufferPtr)
-        const buffer = KLBuffer.alloc(width * height * channel, bufferPtr)
+      messageHandler: ({ fno, bufferPtrVal, id, height, width, channel }) => {
         let sn = this.cameraList[id].sn
-        this.grabbedCb({ buffer: buffer.buffer, sn, id, height, width, channel })
+        // // 根据出图序号纠正出图顺序
+        // this.imagePtrMap.set(fno, bufferPtrVal)
+        // while(this.imagePtrMap.size > 0){
+        //   const expectedImagePtr = this.imagePtrMap.get(this.expectedFrameNo)
+        //   if (expectedImagePtr) {
+        //     this.imagePtrMap.delete(this.expectedFrameNo);
+        //     this.grabbedCb({ fno:this.expectedFrameNo, bufferPtrVal:expectedImagePtr, sn, id, height, width, channel })
+        //     this.expectedFrameNo += 1;
+        //   }
+        // }
+        this.grabbedCb({ fno, bufferPtrVal, sn, id, height, width, channel })
       }
     });
   }
@@ -57,6 +69,7 @@ export class Camera implements CameraInterface {
       await this.getParams(i)
       ids.push(i)
     }
+    // count > 0 ? this.isMock = false : this.isMock
     return ids
   }
 
@@ -73,6 +86,7 @@ export class Camera implements CameraInterface {
       await this.getParams(id)
       ids.push(id)
     }
+    // count > 0 ? this.isMock = true : this.isMock
     return ids
   }
 
@@ -114,7 +128,7 @@ export class Camera implements CameraInterface {
   public grabStop(id: number): void {
     this.pool.execute(id, 'grabStop').then(() => {
       // console.log('相机', this.cameraList[id].sn, '停止采集')
-
+      // this.isMock == false ? this.expectedFrameNo = 0 : this.expectedFrameNo
     })
   }
   /**
