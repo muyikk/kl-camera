@@ -38,7 +38,7 @@ export interface CameraInterface {
    * @returns 
    */
   getParams(id: number): Promise<any>
-  
+
   /**
    * 内触发采集
    * @param id 相机id
@@ -102,4 +102,10 @@ export interface CameraInterface {
    * 关闭所有相机
    */
   closeAll(): Promise<void>
+
+  /**
+   * 后端接受数据源订阅
+   * @param name 订阅名称（需与前端subscribe订阅时同名）
+   */
+  subscribeBackend(name: string): any
 }

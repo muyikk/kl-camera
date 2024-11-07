@@ -142,7 +142,15 @@ class CameraWorker extends ThreadWorker {
        * 关闭所有相机
        */
       closeAll: async () => {
-        return await this.cameraScript.close_all_cameras();
+        await this.cameraScript.close_all_cameras();
+      },
+      /**
+       * 后端接受数据源订阅
+       * @param name 订阅名称（需与前端subscribe订阅时同名）
+       * @returns state 0:成功 1:失败
+       */
+      subscribeBackend: (name) => {
+        return this.cameraScript.subscribe_backend(name);
       }
     })
     this._grabCbMap = new Map();

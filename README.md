@@ -164,6 +164,16 @@ public cameraList: {
    */
   public async getExposureTime(id: number): Promise<any>
 ```
+- 后端接受数据源订阅
+
+```typescript
+  /**
+   * 后端接受数据源订阅
+   * @param name 订阅名称（需与前端subscribe订阅时同名）
+   * @returns state 0:成功 1:失败
+   */
+  public subscribeBackend(name: string): any
+```
 
 ### 3. 示例
 

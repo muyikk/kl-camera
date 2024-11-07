@@ -156,6 +156,11 @@ export const camera = (dllPath) => {
     /// time[in] 曝光时间(us)
     /// return 0:成功, 1:失败
     set_exposure_time: ['int', ['int', 'float']],
+    /// 后端接受数据源订阅
+    /// name[in] 订阅名称（需与前端subscribe订阅时同名）
+    /// return 0:成功 1:失败
+    /// 一般前端应先subscribe（分配并填写共享内存块）再通知后端（对其引用）
+    subscribe_backend: ['int', ['string']],
     /*
       @brief 写图片
       @param [in] 写出图片的路径

@@ -176,6 +176,14 @@ export class Camera implements CameraInterface {
     }
   }
   /**
+   * 后端接受数据源订阅
+   * @param name 订阅名称（需与前端subscribe订阅时同名）
+   * @returns state 0:成功 1:失败
+   */
+  public subscribeBackend(name: string): any {
+    return this.pool.execute(name, 'subscribeBackend')
+  }
+  /**
    * 关闭所有相机
    */
   public async closeAll(): Promise<void> {
