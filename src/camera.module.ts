@@ -1,11 +1,9 @@
 import { Module, Global } from '@nestjs/common';
-import { CameraController } from './camera.controller';
 import { Camera } from './camera.service';
 
 @Global()
 @Module({
   imports: [],
-  controllers: [CameraController],
   providers: [Camera],
   exports: [Camera]
 })
