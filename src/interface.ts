@@ -1,21 +1,15 @@
 import { FixedThreadPool } from 'poolifier';
 
 export interface CameraInterface {
-  // 线程池
-  pool: FixedThreadPool;
-  // 相机dll
-  camera: any;
   // 相机列表
   cameraList: Object;
   // dll路径
   dllPath: string;
-  // 出图回调
-  grabbedCb: any;
 
   /**
    * 初始化线程池中的工具函数
    */
-  initPool(): void
+  initPool(): Promise<void>
 
   /**
    * 创建真实相机

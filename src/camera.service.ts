@@ -7,15 +7,15 @@ import { CameraInterface } from './interface'
 @Injectable()
 export class Camera implements CameraInterface {
   // 线程池
-  pool: FixedThreadPool;
+  private pool: FixedThreadPool;
   // 相机dll
-  camera: any;
-  // 相机列表
-  cameraList: Object;
-  // dll路径
-  dllPath: string;
+  private camera: any;
   // 出图回调
-  grabbedCb: any;
+  private grabbedCb: any;
+  // 相机列表
+  public cameraList: Object;
+  // dll路径
+  public dllPath: string;
 
   // isMock: boolean;
   // imagePtrMap: Map<number, any>;
@@ -53,7 +53,7 @@ export class Camera implements CameraInterface {
   /**
    * 初始化线程池中的工具函数
    */
-  public async initPool() {
+  public async initPool(): Promise<void> {
     await this.pool.execute(this.dllPath, 'initPool')
   }
 
@@ -178,7 +178,7 @@ export class Camera implements CameraInterface {
   /**
    * 获取曝光时间
    * @param id 相机id
-   * @returns time 曝光时间，return false => 失败
+   * @returns time 曝光时间，false => 失败
    */
   public async getExposureTime(id: number): Promise<any> {
     let { fail, time }: any = await this.pool.execute(id, 'getExposureTime')
@@ -208,12 +208,5 @@ export class Camera implements CameraInterface {
    */
   public async closeAll(): Promise<void> {
     await this.pool.execute('closeAll')
-  }
-  /**
-   * 
-   * @returns 
-   */
-  public getHello() {
-    return "Hello"
   }
 }
