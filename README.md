@@ -124,7 +124,7 @@ public cameraList: {
   public grabStop(id: number): void
 ```
 
-- 出图回调函数
+- 出图回调函数<br>
 回调的值为{ fno, bufferPtrVal, sn, id, height, width, channel }<br>
 bufferPtrVal是图片首地址，可以使用kl-buffer获取图片, `pic.buffer`是图片buffer<br>
 ```typescript
