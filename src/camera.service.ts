@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { FixedThreadPool } from 'poolifier';
 import { camera } from './dll/camera';
-import * as KLBuffer from 'kl-buffer'
+import { Library } from 'ffi-napi'
+import KLBuffer from 'kl-buffer'
 import { CameraInterface } from './interface'
 
 @Injectable()
@@ -9,26 +10,24 @@ export class Camera implements CameraInterface {
   // 线程池
   private pool: FixedThreadPool;
   // 相机dll
-  private camera: any;
+  private camera: Library;
   // 出图回调
-  private grabbedCb: any;
+  private grabbedCb: Function;
   // 相机列表
   public cameraList: Object;
-  // dll路径
-  public dllPath: string;
 
   // isMock: boolean;
   // imagePtrMap: Map<number, any>;
   // expectedFrameNo: number;
-  constructor(dllPath: string) {
+  constructor(@Inject('DLL_PATH') private readonly dllPath: string) {
     this.cameraList = new Object;
-    this.dllPath = dllPath
     console.log(`dllPath:`, this.dllPath)
 
     let pathArray = process.env.PATH.split(';');
-    pathArray.unshift(dllPath);
+    pathArray.unshift(this.dllPath);
     process.env.PATH = pathArray.join(';');
-    this.camera = camera(dllPath)
+    this.camera = camera(this.dllPath)
+
     // // 用于纠正出图顺序
     // this.imagePtrMap = new Map<number, any>;
     // this.expectedFrameNo = 0;
@@ -49,6 +48,7 @@ export class Camera implements CameraInterface {
         this.grabbedCb({ fno, bufferPtrVal, sn, id, height, width, channel })
       }
     });
+    this.initPool()
   }
   /**
    * 初始化线程池中的工具函数
@@ -75,13 +75,12 @@ export class Camera implements CameraInterface {
 
   /**
    * 创建模拟相机
-   * @param count 模拟相机数量
    * @param cameraPAthList 模拟相机路径列表
    * @returns 模拟相机id列表
    */
-  public async mock(count: number, cameraPAthList: Array<string>): Promise<number[]> {
+  public async mock(cameraPAthList: Array<string>): Promise<number[]> {
     const ids = []
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < cameraPAthList.length; i++) {
       let id: any = await this.pool.execute(cameraPAthList[i], 'mock')
       await this.getParams(id)
       ids.push(id)
@@ -101,24 +100,41 @@ export class Camera implements CameraInterface {
     return this.cameraList[id];
   }
   /**
+   * 默认回调
+   * @param param0 
+   */
+  private defautCB: Function = ({ fno, bufferPtrVal, sn, id, height, width, channel })=>{
+    const pic = KLBuffer.alloc(width * height * channel, bufferPtrVal)
+    this.freeImg(pic.buffer)
+  }
+  /**
    * 内触发采集
    * @param id 相机id
+   * @param callback 出图回调函数
    */
-  public grabInternal(id: number): void {
+  public grabInternal(id: number, callback?: Function): void {
+    if (!callback)  this.grabbedCb = this.defautCB;
+    else this.grabbedCb = callback;
     this.pool.execute(id, 'grabInternal')
   }
   /**
    * 外触发采集
    * @param id 相机id
+   * @param callback 出图回调函数
    */
-  public grabExternal(id: number): void {
+  public grabExternal(id: number, callback?: Function): void {
+    if (!callback)  this.grabbedCb = this.defautCB;
+    else this.grabbedCb = callback;
     this.pool.execute(id, 'grabExternal')
   }
   /**
    * 单次采集
    * @param id 相机id
+   * @param callback 出图回调函数
    */
-  public grabOnce(id: number): void {
+  public grabOnce(id: number, callback?: Function): void {
+    if (!callback)  this.grabbedCb = this.defautCB;
+    else this.grabbedCb = callback;
     this.pool.execute(id, 'grabOnce')
   }
   /**
@@ -126,23 +142,15 @@ export class Camera implements CameraInterface {
    * @param id 相机id
    */
   public grabStop(id: number): void {
-    this.pool.execute(id, 'grabStop').then(() => {
-      // console.log('相机', this.cameraList[id].sn, '停止采集')
-      // this.isMock == false ? this.expectedFrameNo = 0 : this.expectedFrameNo
-    })
-  }
-  /**
-   * 回调函数，用于出图
-   * @param callback 
-   */
-  public grabbed(callback: any): void {
-    this.grabbedCb = callback;
+    this.pool.execute(id, 'grabStop')
+    // console.log('相机', this.cameraList[id].sn, '停止采集')
+    // this.isMock == false ? this.expectedFrameNo = 0 : this.expectedFrameNo
   }
   /**
    * 释放图片内存
    * @param buffer 要释放的图片buffer
    */
-  public free(buffer: any): void {
+  public freeImg(buffer: Buffer): void {
     this.camera.free_img(buffer);
   }
   /**
@@ -151,8 +159,8 @@ export class Camera implements CameraInterface {
    * @param params 畸变校正参数,为NULL时取消校正  [0-3]相机内参 [4]外参数量(4/5/8/12/14) [5-end]畸变外参
    * @returns true:成功, false:失败
    */
-  public async cameraUndistort({ id, params }): Promise<boolean> {
-    let fail = await this.pool.execute({ id, params }, 'cameraUndistort')
+  public async undistort(id: number, undistortParams: Array<number>|null): Promise<boolean> {
+    let fail = await this.pool.execute({ id, undistortParams }, 'cameraUndistort')
     if (fail) {
       console.error('undistort fail!')
       return false
@@ -166,7 +174,7 @@ export class Camera implements CameraInterface {
    * @param time 曝光时间
    * @returns true:成功, false:失败
    */
-  public async setExposureTime({ id, time }): Promise<boolean> {
+  public async setExposureTime( id: number, time: number ): Promise<boolean> {
     let fail = await this.pool.execute({ id, time }, 'setExposureTime')
     if (fail) {
       console.error('setExposureTime fail!')
@@ -180,7 +188,7 @@ export class Camera implements CameraInterface {
    * @param id 相机id
    * @returns time 曝光时间，false => 失败
    */
-  public async getExposureTime(id: number): Promise<any> {
+  public async getExposureTime(id: number): Promise<boolean|number> {
     let { fail, time }: any = await this.pool.execute(id, 'getExposureTime')
     if (fail) {
       console.error('getExposureTime fail!')
@@ -190,12 +198,12 @@ export class Camera implements CameraInterface {
     }
   }
   /**
-   * 后端接受数据源订阅
+   * ！！！前端使用！！！后端接受数据源订阅
    * @param name 订阅名称（需与前端subscribe订阅时同名）
    * @returns true:成功, false:失败
    */
-  public subscribeBackend(name: string): any {
-    let fail = this.pool.execute(name, 'subscribeBackend')
+  public async subscribeBackend(name: string): Promise<boolean> {
+    let fail = await this.pool.execute(name, 'subscribeBackend')
     if (fail) {
       console.error('subscribeBackend fail!')
       return false
@@ -209,4 +217,17 @@ export class Camera implements CameraInterface {
   public async closeAll(): Promise<void> {
     await this.pool.execute('closeAll')
   }
+
+
+ /**
+  * 获取相机列表
+  */
+  public findAll(): Array<object> {
+    const list = []
+    for (let camera in this.cameraList) {
+      list.push(this.cameraList[camera])
+    }
+    return list
+  }
+
 }
