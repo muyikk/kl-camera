@@ -5,11 +5,6 @@ export interface CameraInterface {
   cameraList: Object;
 
   /**
-   * 初始化线程池中的工具函数
-   */
-  initPool(): Promise<void>
-
-  /**
    * 创建真实相机
    * @param types 相机类型
    * @returns 真实相机id列表

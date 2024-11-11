@@ -53,7 +53,7 @@ export class Camera implements CameraInterface {
   /**
    * 初始化线程池中的工具函数
    */
-  public async initPool(): Promise<void> {
+  private async initPool(): Promise<void> {
     await this.pool.execute(this.dllPath, 'initPool')
   }
 
@@ -90,11 +90,19 @@ export class Camera implements CameraInterface {
   }
 
   /**
+   * 关闭所有相机
+   */
+  public async closeAll(): Promise<void> {
+    await this.pool.execute('closeAll')
+  }
+
+  /**
    * 获取相机参数
    * @param id 相机ID
-   * @returns 
+   * @returns 该相机参数列表
    */
   public async getParams(id: number): Promise<any> {
+    if(typeof id != 'number') console.error(`ERROR: getParams id is not number!`)
     let camera = await this.pool.execute(id, 'getParams')
     this.cameraList[id] = camera;
     return this.cameraList[id];
@@ -103,7 +111,7 @@ export class Camera implements CameraInterface {
    * 默认回调
    * @param param0 
    */
-  private defautCB: Function = ({ fno, bufferPtrVal, sn, id, height, width, channel })=>{
+  private defautCB: Function = ({ fno, bufferPtrVal, sn, id, height, width, channel }) => {
     const pic = KLBuffer.alloc(width * height * channel, bufferPtrVal)
     this.freeImg(pic.buffer)
   }
@@ -113,7 +121,8 @@ export class Camera implements CameraInterface {
    * @param callback 出图回调函数
    */
   public grabInternal(id: number, callback?: Function): void {
-    if (!callback)  this.grabbedCb = this.defautCB;
+    if(typeof id != 'number') console.error(`ERROR: grabInternal id is not number!`)
+    if (!callback) this.grabbedCb = this.defautCB;
     else this.grabbedCb = callback;
     this.pool.execute(id, 'grabInternal')
   }
@@ -123,7 +132,8 @@ export class Camera implements CameraInterface {
    * @param callback 出图回调函数
    */
   public grabExternal(id: number, callback?: Function): void {
-    if (!callback)  this.grabbedCb = this.defautCB;
+  if(typeof id != 'number') console.error(`ERROR: grabExternal id is not number!`)
+    if (!callback) this.grabbedCb = this.defautCB;
     else this.grabbedCb = callback;
     this.pool.execute(id, 'grabExternal')
   }
@@ -133,7 +143,8 @@ export class Camera implements CameraInterface {
    * @param callback 出图回调函数
    */
   public grabOnce(id: number, callback?: Function): void {
-    if (!callback)  this.grabbedCb = this.defautCB;
+    if(typeof id != 'number') console.error(`ERROR: grabOnce id is not number!`)
+    if (!callback) this.grabbedCb = this.defautCB;
     else this.grabbedCb = callback;
     this.pool.execute(id, 'grabOnce')
   }
@@ -142,6 +153,7 @@ export class Camera implements CameraInterface {
    * @param id 相机id
    */
   public grabStop(id: number): void {
+    if(typeof id != 'number') console.error(`ERROR: grabStop id is not number!`)
     this.pool.execute(id, 'grabStop')
     // console.log('相机', this.cameraList[id].sn, '停止采集')
     // this.isMock == false ? this.expectedFrameNo = 0 : this.expectedFrameNo
@@ -159,7 +171,8 @@ export class Camera implements CameraInterface {
    * @param params 畸变校正参数,为NULL时取消校正  [0-3]相机内参 [4]外参数量(4/5/8/12/14) [5-end]畸变外参
    * @returns true:成功, false:失败
    */
-  public async undistort(id: number, undistortParams: Array<number>|null): Promise<boolean> {
+  public async undistort(id: number, undistortParams: Array<number> | null): Promise<boolean> {
+    if(typeof id != 'number') console.error(`ERROR: undistort id is not number!`)
     let fail = await this.pool.execute({ id, undistortParams }, 'cameraUndistort')
     if (fail) {
       console.error('undistort fail!')
@@ -174,7 +187,8 @@ export class Camera implements CameraInterface {
    * @param time 曝光时间
    * @returns true:成功, false:失败
    */
-  public async setExposureTime( id: number, time: number ): Promise<boolean> {
+  public async setExposureTime(id: number, time: number): Promise<boolean> {
+    if(typeof id != 'number' || typeof time != 'number' ) console.error(`ERROR: setExposureTime id|time is not number!`)
     let fail = await this.pool.execute({ id, time }, 'setExposureTime')
     if (fail) {
       console.error('setExposureTime fail!')
@@ -188,7 +202,8 @@ export class Camera implements CameraInterface {
    * @param id 相机id
    * @returns time 曝光时间，false => 失败
    */
-  public async getExposureTime(id: number): Promise<boolean|number> {
+  public async getExposureTime(id: number): Promise<boolean | number> {
+    if(typeof id != 'number') console.error(`ERROR: getExposureTime id is not number!`)
     let { fail, time }: any = await this.pool.execute(id, 'getExposureTime')
     if (fail) {
       console.error('getExposureTime fail!')
@@ -211,17 +226,10 @@ export class Camera implements CameraInterface {
       return true
     }
   }
+
   /**
-   * 关闭所有相机
+   * 获取相机列表
    */
-  public async closeAll(): Promise<void> {
-    await this.pool.execute('closeAll')
-  }
-
-
- /**
-  * 获取相机列表
-  */
   public findAll(): Array<object> {
     const list = []
     for (let camera in this.cameraList) {
