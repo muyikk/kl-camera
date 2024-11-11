@@ -172,6 +172,7 @@ export class AppModule { }
 ```typescript
 // Service
 import { Injectable } from '@nestjs/common';
+import KLBuffer from 'kl-buffer'; // 使用kl-buffer处理图片
 import { Camera } from 'kl-camera';
 
 @Injectable()
@@ -194,8 +195,12 @@ export class AppService {
     
     // 模拟内触发采集
     this.camera.grabInternal(ids[0], (res) => {
-      let { buffer, sn, id, height, width, channel } = res;
+      let { fno, bufferPtrVal, sn, id, height, width, channel } = res;
       console.log(res);
+      // 使用kl-buffer处理图片
+      let buffer = KLBuffer.alloc(width * height * channel, bufferPtrVal).buffer
+      // 释放图片内存
+      this.camera.freeImg(buffer)
     });
   }
 }
