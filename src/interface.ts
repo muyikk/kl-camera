@@ -1,5 +1,24 @@
 import { FixedThreadPool } from 'poolifier';
-
+import KLBuffer from 'kl-buffer';
+export declare interface Image {
+  klBuffer: KLBuffer;
+  // 图片宽度
+  width: number;
+  // 图片高度
+  height: number;
+  // 图片通道
+  channel: number;
+}
+export declare interface GrabCbParam {
+  /**帧号 */
+  fno: number;
+  /**相机sn */
+  sn: string;
+  /**相机id */
+  id: number;
+  /**图片 */
+  image: Image;
+}
 export interface CameraInterface {
   // 相机列表
   cameraList: Object;
@@ -30,21 +49,21 @@ export interface CameraInterface {
    * @param id 相机id
    * @param callback 出图回调函数
    */
-  grabInternal(id: number, callback: Function): void
+  grabInternal(id: number, callback: ({ fno, sn, id, image }: GrabCbParam)=> void): void
 
   /**
    * 外触发采集
    * @param id 相机id
    * @param callback 出图回调函数
    */
-  grabExternal(id: number, callback: Function): void
+  grabExternal(id: number, callback: ({ fno, sn, id, image }: GrabCbParam)=> void): void
 
   /**
    * 单次采集
    * @param id 相机id
    * @param callback 出图回调函数
    */
-  grabOnce(id: number, callback: Function): void
+  grabOnce(id: number, callback: ({ fno, sn, id, image }: GrabCbParam)=> void): void
 
   /**
    * 停止采集

@@ -3,7 +3,7 @@ import { FixedThreadPool } from 'poolifier';
 import { camera } from './dll/camera';
 import { Library } from 'ffi-napi'
 import KLBuffer from 'kl-buffer'
-import { CameraInterface } from './interface'
+import { CameraInterface, Image, GrabCbParam } from './interface'
 
 @Injectable()
 export class Camera implements CameraInterface {
@@ -12,7 +12,7 @@ export class Camera implements CameraInterface {
   // 相机dll
   private camera: Library;
   // 出图回调
-  private grabbedCb: Function;
+  private grabbedCb: ({ fno, sn, id, image }: GrabCbParam)=> void;
   // 相机列表
   public cameraList: Object;
 
@@ -45,7 +45,9 @@ export class Camera implements CameraInterface {
         //     this.expectedFrameNo += 1;
         //   }
         // }
-        this.grabbedCb({ fno, bufferPtrVal, sn, id, height, width, channel })
+        const klBuffer = KLBuffer.alloc(width * height * channel, bufferPtrVal, false)
+        const image: Image = { klBuffer, width, height, channel }
+        this.grabbedCb({ fno, sn, id, image })
       }
     });
     this.initPool()
@@ -111,16 +113,15 @@ export class Camera implements CameraInterface {
    * 默认回调
    * @param param0 
    */
-  private defautCB: Function = ({ fno, bufferPtrVal, sn, id, height, width, channel }) => {
-    const pic = KLBuffer.alloc(width * height * channel, bufferPtrVal)
-    this.freeImg(pic.buffer)
+  private defautCB: ({ fno, sn, id, image }: GrabCbParam)=> void = ({ fno, sn, id, image }) => {
+    this.freeImg(image.klBuffer.buffer)
   }
   /**
    * 内触发采集
    * @param id 相机id
    * @param callback 出图回调函数
    */
-  public grabInternal(id: number, callback?: Function): void {
+  public grabInternal(id: number, callback?: ({ fno, sn, id, image }: GrabCbParam)=> void): void {
     if(typeof id != 'number') console.error(`ERROR: grabInternal id is not number!`)
     if (!callback) this.grabbedCb = this.defautCB;
     else this.grabbedCb = callback;
@@ -131,7 +132,7 @@ export class Camera implements CameraInterface {
    * @param id 相机id
    * @param callback 出图回调函数
    */
-  public grabExternal(id: number, callback?: Function): void {
+  public grabExternal(id: number, callback?: ({ fno, sn, id, image }: GrabCbParam)=> void): void {
   if(typeof id != 'number') console.error(`ERROR: grabExternal id is not number!`)
     if (!callback) this.grabbedCb = this.defautCB;
     else this.grabbedCb = callback;
@@ -142,7 +143,7 @@ export class Camera implements CameraInterface {
    * @param id 相机id
    * @param callback 出图回调函数
    */
-  public grabOnce(id: number, callback?: Function): void {
+  public grabOnce(id: number, callback?: ({ fno, sn, id, image }: GrabCbParam)=> void): void {
     if(typeof id != 'number') console.error(`ERROR: grabOnce id is not number!`)
     if (!callback) this.grabbedCb = this.defautCB;
     else this.grabbedCb = callback;
