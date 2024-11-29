@@ -1,12 +1,13 @@
 import { Controller, Post, Body, Get, Param } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation, ApiParam, ApiBody } from '@nestjs/swagger';
 import { Camera } from './camera.service';
+import HttpResponse from './interface'
 
 @ApiTags('camera')
 @Controller('camera')
 export class CameraController {
   constructor(private cameraService: Camera) { }
-  
+
   @Get("init/:types")
   @ApiOperation({
     summary: '创建真实相机',
@@ -22,8 +23,8 @@ export class CameraController {
     status: 200,
     description: '返回值 0:成功 1:失败',
   })
-  init(@Param("types") types) {
-    return this.cameraService.init(types);
+  init(@Param("types") types: string): HttpResponse<Promise<Array<number>>> {
+    return HttpResponse.ok(this.cameraService.init(types));
   };
 
   @Get("mock/:types")
@@ -41,10 +42,10 @@ export class CameraController {
     status: 200,
     description: '返回值 0:成功 1:失败',
   })
-  mock(@Param("types") types) {
-    return this.cameraService.mock(types);
+  mock(@Param("types") types: Array<string>): HttpResponse<Promise<Array<number>>> {
+    return HttpResponse.ok(this.cameraService.mock(types));
   };
-  
+
   @Get("findAll")
   @ApiOperation({
     summary: '获取相机列表',
@@ -54,8 +55,8 @@ export class CameraController {
     status: 200,
     description: '返回值 0:成功 1:失败',
   })
-  findAll() {
-    return this.cameraService.findAll();
+  findAll(): HttpResponse<Array<Object>> {
+    return HttpResponse.ok(this.cameraService.findAll());
   };
 
   @Get("subscribe/:shmemName")
@@ -73,11 +74,11 @@ export class CameraController {
     status: 200,
     description: '返回值 0:成功 1:失败',
   })
-  subscribe(@Param("shmemName") shmemName) {
-    return this.cameraService.subscribeBackend(shmemName);
+  subscribe(@Param("shmemName") shmemName: string): HttpResponse<Promise<boolean>> {
+    return HttpResponse.ok(this.cameraService.subscribeBackend(shmemName));
   };
 
-  
+
   @Get("grabInternal/:id")
   @ApiOperation({
     summary: '内触发采集',
@@ -93,8 +94,8 @@ export class CameraController {
     status: 200,
     description: '',
   })
-  grabInternal(@Param("id") id) {
-    return this.cameraService.grabInternal(id);
+  grabInternal(@Param("id") id: number): HttpResponse<void> {
+    return HttpResponse.ok(this.cameraService.grabInternal(id));
   };
 
   @Get("grabExternal/:id")
@@ -112,8 +113,8 @@ export class CameraController {
     status: 200,
     description: '',
   })
-  grabExternal(@Param("id") id) {
-    return this.cameraService.grabExternal(id);
+  grabExternal(@Param("id") id: number): HttpResponse<void> {
+    return HttpResponse.ok(this.cameraService.grabExternal(id));
   };
 
   @Get("grabOnce/:id")
@@ -131,8 +132,8 @@ export class CameraController {
     status: 200,
     description: '',
   })
-  grabOnce(@Param("id") id) {
-    return this.cameraService.grabOnce(id);
+  grabOnce(@Param("id") id: number): HttpResponse<void> {
+    return HttpResponse.ok(this.cameraService.grabOnce(id));
   };
 
   @Get("grabStop/:id")
@@ -150,8 +151,8 @@ export class CameraController {
     status: 200,
     description: '',
   })
-  grabStop(@Param("id") id) {
-    return this.cameraService.grabStop(id);
+  grabStop(@Param("id") id: number): HttpResponse<void> {
+    return HttpResponse.ok(this.cameraService.grabStop(id));
   };
 
   @Post("setExposureTime")
@@ -180,8 +181,8 @@ export class CameraController {
     status: 200,
     description: '',
   })
-  setExposureTime(@Body() body) {
-    return this.cameraService.setExposureTime(body.id, body.expTime);
+  setExposureTime(@Body() body: { id: number, expTime: number }): HttpResponse<Promise<boolean>> {
+    return HttpResponse.ok(this.cameraService.setExposureTime(body.id, body.expTime));
   };
 
   @Get("getExposureTime/:id")
@@ -199,8 +200,8 @@ export class CameraController {
     status: 200,
     description: '',
   })
-  getExposureTime(@Param("id") id) {
-    return this.cameraService.getExposureTime(id);
+  getExposureTime(@Param("id") id: number): HttpResponse<Promise<number | boolean>> {
+    return HttpResponse.ok(this.cameraService.getExposureTime(id));
   };
   @Post("undistort")
   @ApiOperation({
@@ -228,8 +229,8 @@ export class CameraController {
     status: 200,
     description: '',
   })
-  undistort(@Body() body) {
-    return this.cameraService.undistort(body.id, body.undistortParams);
+  undistort(@Body() body: { id: number, undistortParams: Array<number> }): HttpResponse<Promise<boolean>> {
+    return HttpResponse.ok(this.cameraService.undistort(body.id, body.undistortParams));
   };
 
 
