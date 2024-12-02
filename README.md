@@ -95,6 +95,18 @@ public cameraList: {
   public grabExternal(id: number, callback?: Function): void
 ```
 
+- 模拟相机外触发触发器
+可使用 api/camera/exMockTrigger 调用
+```typescript
+  /**
+   * 模拟相机外触发触发器
+   * @param id 触发的相机id
+   * @param interval 出图间隔
+   * @param times 出图数量
+   */
+  public exMockTrigger(id: number, interval: number, times: number): void
+```
+
 - 单次采集
 
 ```typescript

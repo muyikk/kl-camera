@@ -117,6 +117,41 @@ export class CameraController {
     return HttpResponse.ok(this.cameraService.grabExternal(id));
   };
 
+  @Post("exMockTrigger")
+  @ApiOperation({
+    summary: '模拟相机外触发触发器',
+    description: '模拟相机外触发触发器',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'number',
+          example: '-1',
+          description: '相机id',
+        },
+        interval: {
+          type: 'number',
+          example: '500',
+          description: '出图间隔'
+        },
+        times: {
+          type: 'number',
+          example: '4',
+          description: '出图数量'
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: '',
+  })
+  exMockTrigger(@Body() body: {id: number, interval: number, times: number}): HttpResponse<void> {
+    return HttpResponse.ok(this.cameraService.exMockTrigger(body.id, body.interval, body.times));
+  };
+
   @Get("grabOnce/:id")
   @ApiOperation({
     summary: '单次采集',

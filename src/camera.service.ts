@@ -12,11 +12,11 @@ export class Camera implements CameraInterface {
   // 相机dll
   private camera: Library;
   // 出图回调
-  private grabbedCb: ({ fno, sn, id, image }: GrabCbParam)=> void;
+  private grabbedCb: ({ fno, sn, id, image }: GrabCbParam) => void;
   // 相机列表
   public cameraList: Object;
 
-  // isMock: boolean;
+  isMock: boolean;
   // imagePtrMap: Map<number, any>;
   // expectedFrameNo: number;
   constructor(@Inject('DLL_PATH') private readonly dllPath: string) {
@@ -71,7 +71,7 @@ export class Camera implements CameraInterface {
       await this.getParams(i)
       ids.push(i)
     }
-    // count > 0 ? this.isMock = false : this.isMock
+    count > 0 ? this.isMock = false : this.isMock
     return ids
   }
 
@@ -87,7 +87,7 @@ export class Camera implements CameraInterface {
       await this.getParams(id)
       ids.push(id)
     }
-    // count > 0 ? this.isMock = true : this.isMock
+    this.isMock = true
     return ids
   }
 
@@ -104,7 +104,7 @@ export class Camera implements CameraInterface {
    * @returns 该相机参数列表
    */
   public async getParams(id: number): Promise<any> {
-    if(typeof id != 'number') console.error(`ERROR: getParams id is not number!`)
+    if (typeof id != 'number') console.error(`ERROR: getParams id is not number!`)
     let camera = await this.pool.execute(id, 'getParams')
     this.cameraList[id] = camera;
     return this.cameraList[id];
@@ -113,7 +113,7 @@ export class Camera implements CameraInterface {
    * 默认回调
    * @param param0 
    */
-  private defautCB: ({ fno, sn, id, image }: GrabCbParam)=> void = ({ fno, sn, id, image }) => {
+  private defautCB: ({ fno, sn, id, image }: GrabCbParam) => void = ({ fno, sn, id, image }) => {
     this.freeImg(image.klBuffer.buffer)
   }
   /**
@@ -121,8 +121,8 @@ export class Camera implements CameraInterface {
    * @param id 相机id
    * @param callback 出图回调函数
    */
-  public grabInternal(id: number, callback?: ({ fno, sn, id, image }: GrabCbParam)=> void): void {
-    if(typeof id != 'number') console.error(`ERROR: grabInternal id is not number!`)
+  public grabInternal(id: number, callback?: ({ fno, sn, id, image }: GrabCbParam) => void): void {
+    // if(typeof id != 'number') console.error(`ERROR: grabInternal id is not number!`)
     if (!callback) this.grabbedCb = this.defautCB;
     else this.grabbedCb = callback;
     this.pool.execute(id, 'grabInternal')
@@ -132,19 +132,38 @@ export class Camera implements CameraInterface {
    * @param id 相机id
    * @param callback 出图回调函数
    */
-  public grabExternal(id: number, callback?: ({ fno, sn, id, image }: GrabCbParam)=> void): void {
-  if(typeof id != 'number') console.error(`ERROR: grabExternal id is not number!`)
+  public grabExternal(id: number, callback?: ({ fno, sn, id, image }: GrabCbParam) => void): void {
+    // if(typeof id != 'number') console.error(`ERROR: grabExternal id is not number!`)
     if (!callback) this.grabbedCb = this.defautCB;
     else this.grabbedCb = callback;
-    this.pool.execute(id, 'grabExternal')
+    if (this.isMock == false) {
+      // 真实相机外触发
+      this.pool.execute(id, 'grabExternal')
+    } else {
+      // 模拟相机外触发
+      // this.pool.execute(id, 'grabOnce')
+    }
+  }
+  /**
+   * 模拟相机外触发触发器
+   * @param id 触发的相机id
+   * @param interval 出图间隔
+   * @param times 出图数量
+   */
+  public exMockTrigger(id: number, interval: number, times: number): void {
+    for (let i = 0; i < times; i++) {
+      setTimeout(() => {
+        this.pool.execute(id, 'grabOnce');
+      }, interval * i);
+    }
   }
   /**
    * 单次采集
    * @param id 相机id
    * @param callback 出图回调函数
    */
-  public grabOnce(id: number, callback?: ({ fno, sn, id, image }: GrabCbParam)=> void): void {
-    if(typeof id != 'number') console.error(`ERROR: grabOnce id is not number!`)
+  public grabOnce(id: number, callback?: ({ fno, sn, id, image }: GrabCbParam) => void): void {
+    // if(typeof id != 'number') console.error(`ERROR: grabOnce id is not number!`)
     if (!callback) this.grabbedCb = this.defautCB;
     else this.grabbedCb = callback;
     this.pool.execute(id, 'grabOnce')
@@ -154,7 +173,7 @@ export class Camera implements CameraInterface {
    * @param id 相机id
    */
   public grabStop(id: number): void {
-    if(typeof id != 'number') console.error(`ERROR: grabStop id is not number!`)
+    if (typeof id != 'number') console.error(`ERROR: grabStop id is not number!`)
     this.pool.execute(id, 'grabStop')
     // console.log('相机', this.cameraList[id].sn, '停止采集')
     // this.isMock == false ? this.expectedFrameNo = 0 : this.expectedFrameNo
@@ -173,7 +192,7 @@ export class Camera implements CameraInterface {
    * @returns true:成功, false:失败
    */
   public async undistort(id: number, undistortParams: Array<number> | null): Promise<boolean> {
-    if(typeof id != 'number') console.error(`ERROR: undistort id is not number!`)
+    if (typeof id != 'number') console.error(`ERROR: undistort id is not number!`)
     let fail = await this.pool.execute({ id, undistortParams }, 'cameraUndistort')
     if (fail) {
       console.error('undistort fail!')
@@ -189,7 +208,7 @@ export class Camera implements CameraInterface {
    * @returns true:成功, false:失败
    */
   public async setExposureTime(id: number, time: number): Promise<boolean> {
-    if(typeof id != 'number' || typeof time != 'number' ) console.error(`ERROR: setExposureTime id|time is not number!`)
+    if (typeof id != 'number' || typeof time != 'number') console.error(`ERROR: setExposureTime id|time is not number!`)
     let fail = await this.pool.execute({ id, time }, 'setExposureTime')
     if (fail) {
       console.error('setExposureTime fail!')
@@ -204,7 +223,7 @@ export class Camera implements CameraInterface {
    * @returns time 曝光时间，false => 失败
    */
   public async getExposureTime(id: number): Promise<boolean | number> {
-    if(typeof id != 'number') console.error(`ERROR: getExposureTime id is not number!`)
+    if (typeof id != 'number') console.error(`ERROR: getExposureTime id is not number!`)
     let { fail, time }: any = await this.pool.execute(id, 'getExposureTime')
     if (fail) {
       console.error('getExposureTime fail!')
