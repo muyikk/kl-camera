@@ -26,7 +26,7 @@ export class Camera implements CameraInterface {
     // let pathArray = process.env.PATH.split(';');
     // pathArray.unshift(this.dllPath);
     // process.env.PATH = pathArray.join(';');
-    // this.camera = camera(this.dllPath)
+    this.camera = camera(this.dllPath)
 
     // // 用于纠正出图顺序
     // this.imagePtrMap = new Map<number, any>;
