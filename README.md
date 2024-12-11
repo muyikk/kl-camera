@@ -172,7 +172,7 @@ import { CameraModule } from 'kl-camera';
 @Module({
   imports: [
     // 填写dllPath路径
-    CameraModule.forRoot('D:\\kl-storage\\template\\dll\\'), 
+    CameraModule.forRoot('D:\\kl-storage\\template\\dll\\wafer.dll'), 
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -6,7 +6,7 @@ import { Camera } from './camera.service';
 @Module({ })
 
 class CameraModule {
-  static forRoot(dllPath: string = 'D:\\kl-storage\\template\\dll'): DynamicModule {
+  static forRoot(dllPath: string = 'D:\\kl-storage\\dll\\wafer.dll'): DynamicModule {
     return {
       module: CameraModule,
       controllers: [CameraController],

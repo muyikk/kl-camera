@@ -3,7 +3,7 @@ import { FixedThreadPool } from 'poolifier';
 import { camera } from './dll/camera';
 import { Library } from 'ffi-napi'
 import KLBuffer from 'kl-buffer'
-import { CameraInterface, Image, GrabCbParam } from './interface'
+import { CameraInterface, Image, GrabCbParam, cameraParam } from './interface'
 
 @Injectable()
 export class Camera implements CameraInterface {
@@ -23,10 +23,10 @@ export class Camera implements CameraInterface {
     this.cameraList = new Object;
     console.log(`dllPath:`, this.dllPath)
 
-    let pathArray = process.env.PATH.split(';');
-    pathArray.unshift(this.dllPath);
-    process.env.PATH = pathArray.join(';');
-    this.camera = camera(this.dllPath)
+    // let pathArray = process.env.PATH.split(';');
+    // pathArray.unshift(this.dllPath);
+    // process.env.PATH = pathArray.join(';');
+    // this.camera = camera(this.dllPath)
 
     // // 用于纠正出图顺序
     // this.imagePtrMap = new Map<number, any>;
@@ -46,7 +46,7 @@ export class Camera implements CameraInterface {
         //   }
         // }
         const klBuffer = KLBuffer.alloc(width * height * channel, bufferPtrVal, false)
-        const image: Image = { klBuffer, width, height, channel }
+        const image: Image = { buffer: klBuffer.buffer, width, height, channel }
         this.grabbedCb({ fno, sn, id, image })
       }
     });
@@ -103,8 +103,8 @@ export class Camera implements CameraInterface {
    * @param id 相机ID
    * @returns 该相机参数列表
    */
-  public async getParams(id: number): Promise<any> {
-    if (typeof id != 'number') console.error(`ERROR: getParams id is not number!`)
+  public async getParams(id: number): Promise<cameraParam> {
+    // if (typeof id != 'number') console.error(`ERROR: getParams id is not number!`)
     let camera = await this.pool.execute(id, 'getParams')
     this.cameraList[id] = camera;
     return this.cameraList[id];
@@ -114,7 +114,7 @@ export class Camera implements CameraInterface {
    * @param param0 
    */
   private defautCB: ({ fno, sn, id, image }: GrabCbParam) => void = ({ fno, sn, id, image }) => {
-    this.freeImg(image.klBuffer.buffer)
+    this.freeImg(image.buffer)
   }
   /**
    * 内触发采集

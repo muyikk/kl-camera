@@ -1,13 +1,23 @@
 import { FixedThreadPool } from 'poolifier';
 import KLBuffer from 'kl-buffer';
 export declare interface Image {
-  klBuffer: KLBuffer;
+  buffer: Buffer;
   // 图片宽度
   width: number;
   // 图片高度
   height: number;
   // 图片通道
   channel: number;
+}
+// 自动获取
+export declare interface cameraParam {
+  id: number, // 相机id
+  width: number,  // 宽
+  height: number, // 高
+  channel: number,  // 通道
+  sn: string,   // 相机序列号
+  model: string,  // 相机型号
+  type: string; // 相机类型
 }
 export declare interface GrabCbParam {
   /**帧号 */

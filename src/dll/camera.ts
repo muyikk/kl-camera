@@ -1,6 +1,6 @@
 import { Library, Callback } from 'ffi-napi';
-export const camera = (dllPath) => {
-  const camera = new Library(dllPath + 'camera', {
+export const camera = (dllPath: string) => {
+  const camera = new Library(dllPath, {
     /*
       @brief 打印库版本信息（编译时间）
       @return  yyyy-mm-dd hh:mm:ss
